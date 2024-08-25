@@ -3,19 +3,44 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
+import 'package:flutter_recruitment_task/presentation/pages/home_page/filters_page.dart';
 import 'package:flutter_recruitment_task/presentation/pages/home_page/home_cubit.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 
 const _mainPadding = EdgeInsets.all(16.0);
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  const HomePage({super.key, this.productId});
+
+  final String? productId;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const BigText('Products'),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(0),
+            child: TextButton(
+              child: const Row(
+                children: [
+                  Icon(Icons.filter_list),
+                  SizedBox(width: 5),
+                  Text('Filters')
+                ],
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const FiltersPage(),
+                  ),
+                );
+              },
+            ),
+          )
+        ],
       ),
       body: Padding(
         padding: _mainPadding,
