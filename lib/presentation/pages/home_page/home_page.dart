@@ -58,7 +58,10 @@ class _ProductsSliverList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final products = state.pages.map((page) => page.products).expand((product) => product).toList();
+    final products = state.pages
+        .map((page) => page.products)
+        .expand((product) => product)
+        .toList();
 
     return SliverList.separated(
       itemCount: products.length,
