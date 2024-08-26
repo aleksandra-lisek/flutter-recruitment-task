@@ -100,6 +100,22 @@ class Tag {
   final String label;
   final String color;
   final String labelColor;
+
+  @override
+  bool operator ==(other) {
+    if (other is! Tag) {
+      return false;
+    }
+
+    return tag == (other).tag;
+  }
+
+  int? _hashCode;
+  @override
+  int get hashCode {
+    _hashCode ??= tag.hashCode;
+    return _hashCode!;
+  }
 }
 
 @JsonSerializable()
