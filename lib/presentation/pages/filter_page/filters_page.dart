@@ -22,20 +22,25 @@ class FiltersPage extends StatelessWidget {
           ErrorFilterPage() => BigText('Error: ${state.error}'),
         };
       }),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: Column(children: [
-        ElevatedButton(
-            child: const Text('Remove filters'),
-            onPressed: () {
-              print('a');
-            }),
-        const SizedBox(height: 24),
-        ElevatedButton(
-            child: const Text('Apply filters'),
-            onPressed: () {
-              print('b');
-            })
-      ]),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(bottom: 24.0),
+        child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton(
+                  child: const Text('Wyczyść filtry'),
+                  onPressed: () {
+                    print('a');
+                  }),
+              const SizedBox(width: 24),
+              ElevatedButton(
+                  child: const Text('Pokaz produkty'),
+                  onPressed: () {
+                    print('b');
+                  }),
+            ]),
+      ),
     );
   }
 }
