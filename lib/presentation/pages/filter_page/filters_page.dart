@@ -54,6 +54,7 @@ class _LoadedWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> listOfSellers = state.listOfSellers ?? [];
     return Container(
       padding: const EdgeInsetsDirectional.all(24),
       child: Column(
@@ -74,6 +75,22 @@ class _LoadedWidget extends StatelessWidget {
           const SizedBox(height: 24),
           const Text('Sprzedawca:'),
           const SizedBox(height: 24),
+          listOfSellers.isNotEmpty
+              ? Center(
+                  child: SizedBox(
+                    width: 240,
+                    child: DropdownButton(
+                      items: [
+                        ...listOfSellers.map((e) => DropdownMenuItem<String>(
+                              value: e,
+                              child: Text(e),
+                            ))
+                      ],
+                      onChanged: (value) {},
+                    ),
+                  ),
+                )
+              : const SizedBox.shrink(),
         ],
       ),
     );

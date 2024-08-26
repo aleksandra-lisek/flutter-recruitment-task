@@ -13,18 +13,23 @@ class LoadingFilterPage extends FilterPageState {
 
 class LoadedFilterPage extends FilterPageState {
   LoadedFilterPage(
-      {required this.listOfAvailableTags, required this.listOfSelectedTags});
+      {required this.listOfAvailableTags,
+      required this.listOfSelectedTags,
+      required this.listOfSellers});
 
   final List<Tag> listOfAvailableTags;
   final List<Tag>? listOfSelectedTags;
+  final List<String>? listOfSellers;
 
   LoadedFilterPage copyWith({
     List<Tag>? listOfAvailableTags,
     List<Tag>? listOfSelectedTags,
+    List<String>? listOfSellers,
   }) {
     return LoadedFilterPage(
       listOfAvailableTags: listOfAvailableTags ?? this.listOfAvailableTags,
       listOfSelectedTags: listOfSelectedTags ?? this.listOfSelectedTags,
+      listOfSellers: listOfSellers ?? this.listOfSellers,
     );
   }
 }
@@ -38,7 +43,12 @@ class ErrorFilterPage extends FilterPageState {
 class FilterCubit extends Cubit<FilterPageState> {
   FilterCubit(this._productsRepository)
       : super(
-            LoadedFilterPage(listOfAvailableTags: [], listOfSelectedTags: []));
+          LoadedFilterPage(
+            listOfAvailableTags: [],
+            listOfSelectedTags: [],
+            listOfSellers: [],
+          ),
+        );
 
   final ProductsRepository _productsRepository;
   final List<ProductsPage> _pages = [];
@@ -57,8 +67,21 @@ class FilterCubit extends Cubit<FilterPageState> {
 
       return products;
     } catch (e) {
-      print('Failed to get all of the products: $e');
+      emit(ErrorFilterPage(error: e));
       return [];
+    }
+  }
+
+  Future<void> getListOfAllSellers() async {
+    try {
+      final products = await _getListOfAllProducts();
+
+      final sellers =
+          products.map((product) => product.offer.sellerName).toSet().toList();
+
+      emit((state as LoadedFilterPage).copyWith(listOfSellers: sellers));
+    } catch (e) {
+      emit(ErrorFilterPage(error: e));
     }
   }
 
@@ -72,7 +95,7 @@ class FilterCubit extends Cubit<FilterPageState> {
       emit((state as LoadedFilterPage)
           .copyWith(listOfAvailableTags: uniqueTags));
     } catch (e) {
-      print('Failed to get all tags: $e');
+      emit(ErrorFilterPage(error: e));
     }
   }
 
@@ -90,7 +113,7 @@ class FilterCubit extends Cubit<FilterPageState> {
       emit((state as LoadedFilterPage)
           .copyWith(listOfSelectedTags: updatedTags));
     } catch (e) {
-      print('Failed to get all tags: $e');
+      emit(ErrorFilterPage(error: e));
     }
   }
 
