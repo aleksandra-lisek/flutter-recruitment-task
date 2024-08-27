@@ -20,10 +20,10 @@ class App extends StatelessWidget {
         BlocProvider<HomeCubit>(
           create: (context) => HomeCubit(productsRepository)..getNextPage(),
         ),
-        BlocProvider<FilterCubit>(
-          create: (context) => FilterCubit(productsRepository)
-            ..getListOfAllSellers()
-            ..getListOfAvailableTags(),
+        BlocProvider<FilterBloc>(
+          lazy: false,
+          create: (context) =>
+              FilterBloc(productsRepository)..add(FetchDataForFilters()),
         )
       ],
       child: const MaterialApp(

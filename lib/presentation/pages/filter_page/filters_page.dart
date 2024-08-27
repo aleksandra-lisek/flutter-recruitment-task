@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_cubit.dart';
+import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_state.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/tag.dart';
 
@@ -14,10 +15,9 @@ class FiltersPage extends StatelessWidget {
         title: const BigText('Filters'),
         leading: const CloseButton(),
       ),
-      body:
-          BlocBuilder<FilterCubit, FilterPageState>(builder: (context, state) {
+      body: BlocBuilder<FilterBloc, FilterPageState>(builder: (context, state) {
         return switch (state) {
-          LoadedFilterPage() => _LoadedWidget(state: state),
+          LoadedFilterPage() => _Filters(state: state),
           LoadingFilterPage() => const BigText('Loading...'),
           ErrorFilterPage() => BigText('Error: ${state.error}'),
         };
@@ -25,28 +25,30 @@ class FiltersPage extends StatelessWidget {
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.only(bottom: 24.0),
         child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                  child: const Text('Wyczyść filtry'),
-                  onPressed: () {
-                    print('a');
-                  }),
-              const SizedBox(width: 24),
-              ElevatedButton(
-                  child: const Text('Pokaz produkty'),
-                  onPressed: () {
-                    print('b');
-                  }),
-            ]),
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              child: const Text('Wyczyść filtry'),
+              onPressed: () =>
+                  context.read<FilterBloc>().add(FetchDataForFilters()),
+            ),
+            const SizedBox(width: 24),
+            ElevatedButton(
+                child: const Text('Pokaz produkty'),
+                onPressed: () {
+                  context.read<FilterBloc>().add(ApplyFiltersEvent());
+                  Navigator.maybePop(context);
+                }),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _LoadedWidget extends StatelessWidget {
-  const _LoadedWidget({
+class _Filters extends StatelessWidget {
+  const _Filters({
     required this.state,
   });
 
@@ -60,37 +62,56 @@ class _LoadedWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Tagi:'),
+          const Text('Wybierz interecujące Cię tagi:'),
           const SizedBox(height: 24),
-          Wrap(
-            children: [
-              ...state.listOfAvailableTags.map((tag) => TagWidget(
-                    tag,
-                    onSelected: (_) =>
-                        context.read<FilterCubit>().updateSelectedTag(tag),
-                    selected: state.listOfSelectedTags?.contains(tag) ?? false,
-                  )),
-            ],
-          ),
-          const SizedBox(height: 24),
-          const Text('Sprzedawca:'),
-          const SizedBox(height: 24),
-          listOfSellers.isNotEmpty
-              ? Center(
-                  child: SizedBox(
-                    width: 240,
-                    child: DropdownButton(
-                      items: [
-                        ...listOfSellers.map((e) => DropdownMenuItem<String>(
-                              value: e,
-                              child: Text(e),
-                            ))
-                      ],
-                      onChanged: (value) {},
-                    ),
-                  ),
+          state.listOfAvailableTags != null &&
+                  state.listOfAvailableTags!.isNotEmpty
+              ? Wrap(
+                  children: [
+                    ...state.listOfAvailableTags!.map((tag) => TagWidget(
+                          tag,
+                          onSelected: (_) =>
+                              BlocProvider.of<FilterBloc>(context)
+                                  .add(UpdateSelectedTagEvent(tag)),
+                          selected:
+                              state.listOfSelectedTags?.contains(tag) ?? false,
+                        )),
+                  ],
                 )
               : const SizedBox.shrink(),
+          const SizedBox(height: 24),
+          Row(
+            children: [
+              const Text('Wybierz sprzedawcę:'),
+              const SizedBox(width: 24),
+              listOfSellers.isNotEmpty
+                  ? SizedBox(
+                      width: 140,
+                      child: DropdownButton(
+                        enableFeedback: true,
+                        value: state.selectedSeller,
+                        icon: const Icon(Icons.arrow_downward),
+                        elevation: 16,
+                        underline: Container(
+                          height: 2,
+                          color: Colors.deepPurpleAccent,
+                        ),
+                        items: [
+                          ...listOfSellers.map(
+                            (e) => DropdownMenuItem<String>(
+                              value: e,
+                              child: Text(e),
+                            ),
+                          )
+                        ],
+                        onChanged: (value) =>
+                            BlocProvider.of<FilterBloc>(context)
+                                .add(UpdateSelectedSellersEvent(value)),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ],
+          ),
         ],
       ),
     );

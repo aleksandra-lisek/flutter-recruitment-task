@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
+import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_cubit.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_page.dart';
+import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_state.dart';
 import 'package:flutter_recruitment_task/presentation/pages/home_page/home_cubit.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/tag.dart';
@@ -43,14 +45,32 @@ class HomePage extends StatelessWidget {
       ),
       body: Padding(
         padding: _mainPadding,
-        child: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) {
-            return switch (state) {
-              Error() => BigText('Error: ${state.error}'),
-              Loading() => const BigText('Loading...'),
-              Loaded() => _LoadedWidget(state: state),
-            };
+        child: BlocListener<FilterBloc, FilterPageState>(
+          //         listenWhen: (context, state) {
+          //
+          // },
+          listener: (context, fs) {
+            final currentState = (fs as LoadedFilterPage);
+
+            if (currentState.filteredProducts != null &&
+                currentState.filteredProducts!.isNotEmpty) {
+              print('filters are done');
+              print(currentState.filteredProducts);
+              context
+                  .read<HomeCubit>()
+                  .getFilteredPages(currentState.filteredProducts!);
+            }
           },
+
+          child: BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              return switch (state) {
+                Error() => BigText('Error: ${state.error}'),
+                Loading() => const BigText('Loading...'),
+                Loaded() => _LoadedWidget(state: state),
+              };
+            },
+          ),
         ),
       ),
     );

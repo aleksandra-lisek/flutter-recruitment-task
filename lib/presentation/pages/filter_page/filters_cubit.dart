@@ -1,57 +1,43 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
+import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_state.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
 
-sealed class FilterPageState {
-  const FilterPageState();
+abstract class FilterEvent {}
+
+class FetchDataForFilters extends FilterEvent {}
+
+class UpdateSelectedTagEvent extends FilterEvent {
+  final Tag tag;
+  UpdateSelectedTagEvent(this.tag);
 }
 
-class LoadingFilterPage extends FilterPageState {
-  const LoadingFilterPage();
+class UpdateSelectedSellersEvent extends FilterEvent {
+  final String? sellerId;
+  UpdateSelectedSellersEvent(this.sellerId);
 }
 
-class LoadedFilterPage extends FilterPageState {
-  LoadedFilterPage(
-      {required this.listOfAvailableTags,
-      required this.listOfSelectedTags,
-      required this.listOfSellers});
+class ClearFiltersEvent extends FilterEvent {}
 
-  final List<Tag> listOfAvailableTags;
-  final List<Tag>? listOfSelectedTags;
-  final List<String>? listOfSellers;
-
-  LoadedFilterPage copyWith({
-    List<Tag>? listOfAvailableTags,
-    List<Tag>? listOfSelectedTags,
-    List<String>? listOfSellers,
-  }) {
-    return LoadedFilterPage(
-      listOfAvailableTags: listOfAvailableTags ?? this.listOfAvailableTags,
-      listOfSelectedTags: listOfSelectedTags ?? this.listOfSelectedTags,
-      listOfSellers: listOfSellers ?? this.listOfSellers,
-    );
-  }
+class ApplyFiltersEvent extends FilterEvent {
+  ApplyFiltersEvent();
 }
 
-class ErrorFilterPage extends FilterPageState {
-  const ErrorFilterPage({required this.error});
-
-  final dynamic error;
-}
-
-class FilterCubit extends Cubit<FilterPageState> {
-  FilterCubit(this._productsRepository)
-      : super(
-          LoadedFilterPage(
-            listOfAvailableTags: [],
-            listOfSelectedTags: [],
-            listOfSellers: [],
-          ),
-        );
-
+// Bloc Implementation
+class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
   final ProductsRepository _productsRepository;
   final List<ProductsPage> _pages = [];
+
+  FilterBloc(this._productsRepository)
+      : super(
+          const LoadingFilterPage(),
+        ) {
+    on<FetchDataForFilters>(_fetchDataForFilters);
+    on<UpdateSelectedTagEvent>(_onUpdateSelectedTag);
+    on<UpdateSelectedSellersEvent>(_onUpdateSelectedSellers);
+    on<ApplyFiltersEvent>(_onApplyFilters);
+  }
 
   Future<List<Product>> _getListOfAllProducts() async {
     final totalPages = _pages.lastOrNull?.totalPages;
@@ -67,56 +53,90 @@ class FilterCubit extends Cubit<FilterPageState> {
 
       return products;
     } catch (e) {
-      emit(ErrorFilterPage(error: e));
       return [];
     }
   }
 
-  Future<void> getListOfAllSellers() async {
+  Future<void> _fetchDataForFilters(
+      FetchDataForFilters event, Emitter<FilterPageState> emit) async {
+    try {
+      emit(await _onLoadAvailableFilters());
+    } catch (e) {
+      emit(ErrorFilterPage(error: e));
+    }
+  }
+
+  Future<FilterPageState> _onLoadAvailableFilters() async {
     try {
       final products = await _getListOfAllProducts();
-
+      final uniqueTags =
+          products.expand((product) => product.tags).toSet().toList();
       final sellers =
           products.map((product) => product.offer.sellerName).toSet().toList();
 
-      emit((state as LoadedFilterPage).copyWith(listOfSellers: sellers));
+      return LoadedFilterPage()
+          .copyWith(listOfAvailableTags: uniqueTags, listOfSellers: sellers);
     } catch (e) {
-      emit(ErrorFilterPage(error: e));
+      return ErrorFilterPage(error: e);
     }
   }
 
-  Future<void> getListOfAvailableTags() async {
-    try {
-      final products = await _getListOfAllProducts();
-
-      final uniqueTags =
-          products.expand((product) => product.tags).toSet().toList();
-
-      emit((state as LoadedFilterPage)
-          .copyWith(listOfAvailableTags: uniqueTags));
-    } catch (e) {
-      emit(ErrorFilterPage(error: e));
-    }
-  }
-
-  Future<void> updateSelectedTag(Tag tag) async {
+  Future<void> _onUpdateSelectedTag(
+      UpdateSelectedTagEvent event, Emitter<FilterPageState> emit) async {
     try {
       final currentState = state as LoadedFilterPage;
-      final List<Tag>? updatedTags = currentState.listOfSelectedTags;
-      if (updatedTags?.contains(tag) != null &&
-          updatedTags?.contains(tag) == true) {
-        updatedTags?.removeWhere((element) => element.tag == tag.tag);
+      final List<Tag> updatedTags = currentState.listOfSelectedTags ?? [];
+
+      if (updatedTags.contains(event.tag) == true) {
+        updatedTags.removeWhere((element) => element.tag == event.tag.tag);
       } else {
-        updatedTags?.add(tag);
+        updatedTags.add(event.tag);
       }
 
-      emit((state as LoadedFilterPage)
-          .copyWith(listOfSelectedTags: updatedTags));
+      emit(currentState.copyWith(listOfSelectedTags: updatedTags));
     } catch (e) {
       emit(ErrorFilterPage(error: e));
     }
   }
 
-  // aply filters
-  // remove filters
+  Future<void> _onUpdateSelectedSellers(
+      UpdateSelectedSellersEvent event, Emitter<FilterPageState> emit) async {
+    try {
+      final currentState = state as LoadedFilterPage;
+
+      emit(currentState.copyWith(selectedSeller: event.sellerId));
+    } catch (e) {
+      emit(ErrorFilterPage(error: e));
+    }
+  }
+
+  Future<void> _onApplyFilters(
+      ApplyFiltersEvent event, Emitter<FilterPageState> emit) async {
+    try {
+      final currentState = state as LoadedFilterPage;
+
+      // Fetch all products
+      final products = await _getListOfAllProducts();
+
+      // Get selected filters
+      final selectedSellerId = currentState.selectedSeller;
+      final selectedTags = currentState.listOfSelectedTags ?? [];
+
+      // Filter products by the selected seller and selected tags
+      final filteredProducts = products.where((product) {
+        final matchesSeller = selectedSellerId == null ||
+            product.offer.sellerName == selectedSellerId;
+        final matchesTags = selectedTags.isEmpty ||
+            selectedTags.every((tag) => product.tags.contains(tag));
+        return matchesSeller && matchesTags;
+      }).toList();
+
+      // Emit the state with the filtered products
+      emit(currentState.copyWith(
+        filteredProducts: filteredProducts,
+      ));
+    } catch (e) {
+      emit(ErrorFilterPage(error: e));
+    }
+  }
 }
