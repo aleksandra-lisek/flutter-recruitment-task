@@ -74,8 +74,10 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
       final sellers =
           products.map((product) => product.offer.sellerName).toSet().toList();
 
-      return LoadedFilterPage()
-          .copyWith(listOfAvailableTags: uniqueTags, listOfSellers: sellers);
+      return LoadedFilterPage().copyWith(
+        listOfAvailableTags: uniqueTags,
+        listOfSellers: sellers,
+      );
     } catch (e) {
       return ErrorFilterPage(error: e);
     }
@@ -134,6 +136,7 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
       // Emit the state with the filtered products
       emit(currentState.copyWith(
         filteredProducts: filteredProducts,
+        areProductsFiltered: true,
       ));
     } catch (e) {
       emit(ErrorFilterPage(error: e));

@@ -18,6 +18,10 @@ class Loaded extends HomeState {
   final List<ProductsPage> pages;
 }
 
+class NoProducts extends HomeState {
+  const NoProducts();
+}
+
 class Error extends HomeState {
   const Error({required this.error});
 
@@ -31,29 +35,29 @@ class HomeCubit extends Cubit<HomeState> {
   final List<ProductsPage> _pages = [];
   var _param = GetProductsPage(pageNumber: 1);
 
-  Future<void> getFilteredPages(List<Product> filteredProducts) async {
+  Future<void> getFilteredPages(List<Product>? filteredProducts) async {
     try {
-      final List<List<Product>> a = filteredProducts.isEmpty
-          ? []
-          : [
-              for (int i = 0; i < filteredProducts.length; i += 20)
-                filteredProducts.skip(i).take(20).toList()
-            ];
-      final totalPages = a.length;
-      final List<ProductsPage> b = a.fold(
+      final List<List<Product>> listOfProducts =
+          filteredProducts == null || filteredProducts.isEmpty
+              ? []
+              : [
+                  for (int i = 0; i < filteredProducts.length; i += 20)
+                    filteredProducts.skip(i).take(20).toList()
+                ];
+      final totalPages = listOfProducts.length;
+      final List<ProductsPage> listOfFilteredProductPages = listOfProducts.fold(
           [],
           (previousValue, element) => [
                 ProductsPage(
                     totalPages: totalPages,
-                    pageNumber: a.indexOf(element),
+                    pageNumber: listOfProducts.indexOf(element),
                     pageSize: 20,
                     products: element)
               ]);
-      _pages.replaceRange(0, _pages.length, b);
-      print(_pages);
-
-      emit(Loaded(pages: b));
-      getNextPage();
+      _pages.replaceRange(0, _pages.length, listOfFilteredProductPages);
+      listOfProducts.isEmpty
+          ? emit(const NoProducts())
+          : emit(Loaded(pages: listOfFilteredProductPages));
     } catch (e) {
       emit(Error(error: e));
     }

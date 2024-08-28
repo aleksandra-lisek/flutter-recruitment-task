@@ -46,27 +46,20 @@ class HomePage extends StatelessWidget {
       body: Padding(
         padding: _mainPadding,
         child: BlocListener<FilterBloc, FilterPageState>(
-          //         listenWhen: (context, state) {
-          //
-          // },
           listener: (context, fs) {
             final currentState = (fs as LoadedFilterPage);
-
-            if (currentState.filteredProducts != null &&
-                currentState.filteredProducts!.isNotEmpty) {
-              print('filters are done');
-              print(currentState.filteredProducts);
+            if (currentState.areProductsFiltered == true) {
               context
                   .read<HomeCubit>()
-                  .getFilteredPages(currentState.filteredProducts!);
+                  .getFilteredPages(currentState.filteredProducts);
             }
           },
-
           child: BlocBuilder<HomeCubit, HomeState>(
             builder: (context, state) {
               return switch (state) {
                 Error() => BigText('Error: ${state.error}'),
                 Loading() => const BigText('Loading...'),
+                NoProducts() => const BigText('No products'),
                 Loaded() => _LoadedWidget(state: state),
               };
             },

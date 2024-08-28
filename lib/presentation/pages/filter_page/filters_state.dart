@@ -15,6 +15,7 @@ class LoadedFilterPage extends FilterPageState {
   final List<String>? listOfSellers;
   final String? selectedSeller;
   final List<Product>? filteredProducts;
+  final bool? areProductsFiltered;
 
   LoadedFilterPage({
     this.listOfAvailableTags,
@@ -22,6 +23,7 @@ class LoadedFilterPage extends FilterPageState {
     this.listOfSellers,
     this.selectedSeller,
     this.filteredProducts,
+    this.areProductsFiltered,
   });
 
   LoadedFilterPage copyWith({
@@ -30,6 +32,7 @@ class LoadedFilterPage extends FilterPageState {
     List<String>? listOfSellers,
     String? selectedSeller,
     List<Product>? filteredProducts,
+    bool? areProductsFiltered,
   }) {
     return LoadedFilterPage(
       listOfAvailableTags: listOfAvailableTags ?? this.listOfAvailableTags,
@@ -37,6 +40,7 @@ class LoadedFilterPage extends FilterPageState {
       listOfSellers: listOfSellers ?? this.listOfSellers,
       selectedSeller: selectedSeller ?? this.selectedSeller,
       filteredProducts: filteredProducts ?? this.filteredProducts,
+      areProductsFiltered: areProductsFiltered ?? this.areProductsFiltered,
     );
   }
 }
