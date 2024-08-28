@@ -2,14 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
-
 import 'package:flutter_recruitment_task/models/products_page.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_bloc.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_page.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_state.dart';
 import 'package:flutter_recruitment_task/presentation/pages/home_page/home_cubit.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 const _mainPadding = EdgeInsets.all(16.0);
 
@@ -74,7 +73,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _LoadedWidget extends StatefulWidget {
+class _LoadedWidget extends StatelessWidget {
   const _LoadedWidget({
     required this.state,
     this.scrollProductId,
@@ -84,16 +83,40 @@ class _LoadedWidget extends StatefulWidget {
   final String? scrollProductId;
 
   @override
-  State<_LoadedWidget> createState() => _LoadedWidgetState();
+  Widget build(BuildContext context) {
+    return Column(children: <Widget>[
+      Expanded(
+        child:
+            _ProductsSliverList(state: state, scrollProductId: scrollProductId),
+      ),
+      const Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
+        Column(
+          children: <Widget>[
+            _GetNextPageButton(),
+          ],
+        )
+      ])
+    ]);
+  }
 }
 
-class _LoadedWidgetState extends State<_LoadedWidget> {
+class _ProductsSliverList extends StatefulWidget {
+  const _ProductsSliverList({required this.state, this.scrollProductId});
+
+  final Loaded state;
+  final String? scrollProductId;
+
+  @override
+  State<_ProductsSliverList> createState() => _ProductsSliverListState();
+}
+
+class _ProductsSliverListState extends State<_ProductsSliverList> {
   final _scrollController = ItemScrollController();
-  late List<Product> products;
+  late List<Product> _products;
 
   @override
   void initState() {
-    products = widget.state.pages
+    _products = widget.state.pages
         .map((page) => page.products)
         .expand((product) => product)
         .toList();
@@ -114,7 +137,7 @@ class _LoadedWidgetState extends State<_LoadedWidget> {
 
   void _scrollToKey(String scrollProductId) {
     final getProductId =
-        products.indexWhere((element) => element.id == scrollProductId);
+        _products.indexWhere((element) => element.id == scrollProductId);
     print(getProductId);
     _scrollController.scrollTo(
         index: getProductId, duration: const Duration(seconds: 1));
@@ -123,29 +146,31 @@ class _LoadedWidgetState extends State<_LoadedWidget> {
   @override
   Widget build(BuildContext context) {
     return ScrollablePositionedList.separated(
+      key: const Key('ScrollableList'),
       itemScrollController: _scrollController,
-      itemBuilder: (context, index) => _ProductCard(products[index], index),
-      itemCount: products.length,
+      itemCount: _products.length,
+      itemBuilder: (context, index) =>
+          _ProductCard(_products[index], index.toString()),
       separatorBuilder: (context, index) => const Divider(),
     );
   }
 }
 
 class _ProductCard extends StatelessWidget {
-  const _ProductCard(this.product, this.index);
+  const _ProductCard(this.product, this.productIndex);
 
   final Product product;
-  final int index;
+  final String productIndex;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      key: key,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           BigText(product.name),
-          Text('$index'),
+          Text(product.id),
+          Text(productIndex),
           _Tags(product: product),
         ],
       ),
@@ -202,11 +227,9 @@ class _GetNextPageButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SliverToBoxAdapter(
-      child: TextButton(
-        onPressed: context.read<HomeCubit>().getNextPage,
-        child: const BigText('Get next page'),
-      ),
+    return TextButton(
+      onPressed: context.read<HomeCubit>().getNextPage,
+      child: const BigText('Get next page'),
     );
   }
 }

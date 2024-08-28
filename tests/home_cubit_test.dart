@@ -84,10 +84,6 @@ void main() {
       expect: () => [
         Loaded(pages: sampleProductPages),
       ],
-      // verify: (_) {
-      //   verify(() => mockProductsRepository
-      //       .getProductsPage(GetProductsPage(pageNumber: 1))).called();
-      // },
     );
   });
 }
