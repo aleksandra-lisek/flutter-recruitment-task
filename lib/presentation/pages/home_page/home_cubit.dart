@@ -3,9 +3,12 @@ import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
+import 'package:equatable/equatable.dart';
 
-sealed class HomeState {
+sealed class HomeState extends Equatable {
   const HomeState();
+  @override
+  List<Object?> get props => [];
 }
 
 class Loading extends HomeState {
@@ -16,6 +19,19 @@ class Loaded extends HomeState {
   const Loaded({required this.pages});
 
   final List<ProductsPage> pages;
+
+  @override
+  List<Object?> get props => [pages];
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is List<ProductsPage> &&
+          runtimeType == other.runtimeType &&
+          pages == other;
+
+  @override
+  int get hashCode => pages.hashCode;
 }
 
 class NoProducts extends HomeState {
@@ -26,6 +42,9 @@ class Error extends HomeState {
   const Error({required this.error});
 
   final dynamic error;
+
+  @override
+  List<Object?> get props => [error];
 }
 
 class HomeCubit extends Cubit<HomeState> {
@@ -37,25 +56,31 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> getFilteredPages(List<Product>? filteredProducts) async {
     try {
-      final List<List<Product>> listOfProducts =
+      List<Map<String, dynamic>> listOfFilteredProducts =
           filteredProducts == null || filteredProducts.isEmpty
               ? []
               : [
                   for (int i = 0; i < filteredProducts.length; i += 20)
-                    filteredProducts.skip(i).take(20).toList()
+                    {
+                      'index': i ~/ 20,
+                      'products': filteredProducts.skip(i).take(20).toList()
+                    }
                 ];
-      final totalPages = listOfProducts.length;
-      final List<ProductsPage> listOfFilteredProductPages = listOfProducts.fold(
-          [],
-          (previousValue, element) => [
-                ProductsPage(
-                    totalPages: totalPages,
-                    pageNumber: listOfProducts.indexOf(element),
-                    pageSize: 20,
-                    products: element)
-              ]);
+      final totalPages = listOfFilteredProducts.length;
+      final List<ProductsPage> listOfFilteredProductPages =
+          listOfFilteredProducts.fold([], (previousValue, element) {
+        return [
+          ...previousValue,
+          ProductsPage(
+            totalPages: totalPages,
+            pageNumber: element['index'] + 1,
+            pageSize: 20,
+            products: element['products'],
+          )
+        ];
+      });
       _pages.replaceRange(0, _pages.length, listOfFilteredProductPages);
-      listOfProducts.isEmpty
+      listOfFilteredProducts.isEmpty
           ? emit(const NoProducts())
           : emit(Loaded(pages: listOfFilteredProductPages));
     } catch (e) {

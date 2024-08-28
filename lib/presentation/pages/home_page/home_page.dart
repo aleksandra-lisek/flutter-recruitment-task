@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
@@ -6,7 +8,6 @@ import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_state.dart';
 import 'package:flutter_recruitment_task/presentation/pages/home_page/home_cubit.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
-import 'package:flutter_recruitment_task/presentation/widgets/tag.dart';
 
 const _mainPadding = EdgeInsets.all(16.0);
 
@@ -136,7 +137,38 @@ class _Tags extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(children: [...product.tags.map(TagWidget.new)]);
+    return Wrap(children: [...product.tags.map(_TagWidget.new)]);
+  }
+}
+
+class _TagWidget extends StatefulWidget {
+  const _TagWidget(this.tag);
+
+  final Tag tag;
+
+  @override
+  State<_TagWidget> createState() => _TagWidgetState();
+}
+
+class _TagWidgetState extends State<_TagWidget> {
+  late MaterialColor _color;
+  final List<MaterialColor> _possibleColors = Colors.primaries;
+
+  @override
+  void initState() {
+    _color = _possibleColors[Random().nextInt(_possibleColors.length)];
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: Chip(
+        color: MaterialStateProperty.all(_color),
+        label: Text(widget.tag.label),
+      ),
+    );
   }
 }
 

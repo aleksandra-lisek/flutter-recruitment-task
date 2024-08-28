@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_recruitment_task/models/products_page.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_cubit.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_state.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
-import 'package:flutter_recruitment_task/presentation/widgets/tag.dart';
+import 'package:flutter_recruitment_task/utils/hex_color.dart';
 
 class FiltersPage extends StatelessWidget {
   const FiltersPage({super.key});
@@ -68,7 +69,7 @@ class _Filters extends StatelessWidget {
                   state.listOfAvailableTags!.isNotEmpty
               ? Wrap(
                   children: [
-                    ...state.listOfAvailableTags!.map((tag) => TagWidget(
+                    ...state.listOfAvailableTags!.map((tag) => _TagWidget(
                           tag,
                           onSelected: (_) =>
                               BlocProvider.of<FilterBloc>(context)
@@ -113,6 +114,37 @@ class _Filters extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _TagWidget extends StatelessWidget {
+  const _TagWidget(
+    this.tag, {
+    this.onSelected,
+    this.selected = false,
+  });
+
+  final Tag tag;
+  final Function(bool)? onSelected;
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      child: FilterChip(
+        onSelected: onSelected,
+        selected: selected,
+        color: MaterialStateProperty.all(HexColor(tag.color)),
+        label: Text(
+          tag.label,
+          style: TextStyle(
+            color: HexColor(tag.labelColor),
+          ),
+        ),
       ),
     );
   }
