@@ -27,7 +27,6 @@ class ApplyFiltersEvent extends FilterEvent {
 // Bloc Implementation
 class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
   final ProductsRepository _productsRepository;
-  final List<ProductsPage> _pages = [];
 
   FilterBloc(this._productsRepository)
       : super(
@@ -40,10 +39,12 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
   }
 
   Future<List<Product>> _getListOfAllProducts() async {
-    final totalPages = _pages.lastOrNull?.totalPages;
+    final ProductsPage newPage = await _productsRepository
+        .getProductsPage(GetProductsPage(pageNumber: 1));
+
     try {
       final List<Future<ProductsPage>> pageFutures = List.generate(
-        totalPages ?? 1,
+        newPage.totalPages,
         (index) => _productsRepository
             .getProductsPage(GetProductsPage(pageNumber: index + 1)),
       );
