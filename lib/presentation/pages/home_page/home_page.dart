@@ -2,8 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+
 import 'package:flutter_recruitment_task/models/products_page.dart';
-import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_cubit.dart';
+import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_bloc.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_page.dart';
 import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_state.dart';
 import 'package:flutter_recruitment_task/presentation/pages/home_page/home_cubit.dart';
@@ -12,9 +14,9 @@ import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 const _mainPadding = EdgeInsets.all(16.0);
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key, this.productId});
+  const HomePage({super.key, this.scrollProductId});
 
-  final String? productId;
+  final String? scrollProductId;
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +63,8 @@ class HomePage extends StatelessWidget {
                 Error() => BigText('Error: ${state.error}'),
                 Loading() => const BigText('Loading...'),
                 NoProducts() => const BigText('No products'),
-                Loaded() => _LoadedWidget(state: state),
+                Loaded() =>
+                  _LoadedWidget(state: state, scrollProductId: scrollProductId),
               };
             },
           ),
@@ -71,56 +74,78 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _LoadedWidget extends StatelessWidget {
+class _LoadedWidget extends StatefulWidget {
   const _LoadedWidget({
     required this.state,
+    this.scrollProductId,
   });
 
   final Loaded state;
+  final String? scrollProductId;
 
   @override
-  Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: [
-        _ProductsSliverList(state: state),
-        const _GetNextPageButton(),
-      ],
-    );
-  }
+  State<_LoadedWidget> createState() => _LoadedWidgetState();
 }
 
-class _ProductsSliverList extends StatelessWidget {
-  const _ProductsSliverList({required this.state});
-
-  final Loaded state;
+class _LoadedWidgetState extends State<_LoadedWidget> {
+  final _scrollController = ItemScrollController();
+  late List<Product> products;
 
   @override
-  Widget build(BuildContext context) {
-    final products = state.pages
+  void initState() {
+    products = widget.state.pages
         .map((page) => page.products)
         .expand((product) => product)
         .toList();
 
-    return SliverList.separated(
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.scrollProductId != null &&
+          widget.scrollProductId!.isNotEmpty) {
+        _scrollToKey(widget.scrollProductId!);
+      }
+    });
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  void _scrollToKey(String scrollProductId) {
+    final getProductId =
+        products.indexWhere((element) => element.id == scrollProductId);
+    print(getProductId);
+    _scrollController.scrollTo(
+        index: getProductId, duration: const Duration(seconds: 1));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ScrollablePositionedList.separated(
+      itemScrollController: _scrollController,
+      itemBuilder: (context, index) => _ProductCard(products[index], index),
       itemCount: products.length,
-      itemBuilder: (context, index) => _ProductCard(products[index]),
       separatorBuilder: (context, index) => const Divider(),
     );
   }
 }
 
 class _ProductCard extends StatelessWidget {
-  const _ProductCard(this.product);
+  const _ProductCard(this.product, this.index);
 
   final Product product;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
     return Card(
+      key: key,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           BigText(product.name),
+          Text('$index'),
           _Tags(product: product),
         ],
       ),
