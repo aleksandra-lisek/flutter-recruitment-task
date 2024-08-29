@@ -13,7 +13,7 @@ class FiltersPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const BigText('Filters'),
+        title: const BigText('Filtry'),
         leading: const CloseButton(),
       ),
       body: BlocBuilder<FilterBloc, FilterPageState>(builder: (context, state) {
@@ -57,7 +57,8 @@ class _Filters extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> listOfSellers = state.listOfSellers ?? [];
+    final List<String> listOfAvailableSellers =
+        state.listOfAvailableSellers ?? [];
     return Container(
       padding: const EdgeInsetsDirectional.all(24),
       child: Column(
@@ -85,7 +86,7 @@ class _Filters extends StatelessWidget {
             children: [
               const Text('Wybierz sprzedawcę:'),
               const SizedBox(width: 24),
-              listOfSellers.isNotEmpty
+              listOfAvailableSellers.isNotEmpty
                   ? SizedBox(
                       width: 140,
                       child: DropdownButton(
@@ -98,7 +99,7 @@ class _Filters extends StatelessWidget {
                           color: Colors.deepPurpleAccent,
                         ),
                         items: [
-                          ...listOfSellers.map(
+                          ...listOfAvailableSellers.map(
                             (e) => DropdownMenuItem<String>(
                               value: e,
                               child: Text(e),

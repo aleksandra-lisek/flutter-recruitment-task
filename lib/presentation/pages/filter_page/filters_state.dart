@@ -12,7 +12,7 @@ class LoadingFilterPage extends FilterPageState {
 class LoadedFilterPage extends FilterPageState {
   final List<Tag>? listOfAvailableTags;
   final List<Tag>? listOfSelectedTags;
-  final List<String>? listOfSellers;
+  final List<String>? listOfAvailableSellers;
   final String? selectedSeller;
   final List<Product>? filteredProducts;
   final bool? areProductsFiltered;
@@ -20,7 +20,7 @@ class LoadedFilterPage extends FilterPageState {
   LoadedFilterPage({
     this.listOfAvailableTags,
     this.listOfSelectedTags,
-    this.listOfSellers,
+    this.listOfAvailableSellers,
     this.selectedSeller,
     this.filteredProducts,
     this.areProductsFiltered,
@@ -29,7 +29,7 @@ class LoadedFilterPage extends FilterPageState {
   LoadedFilterPage copyWith({
     List<Tag>? listOfAvailableTags,
     List<Tag>? listOfSelectedTags,
-    List<String>? listOfSellers,
+    List<String>? listOfAvailableSellers,
     String? selectedSeller,
     List<Product>? filteredProducts,
     bool? areProductsFiltered,
@@ -37,7 +37,8 @@ class LoadedFilterPage extends FilterPageState {
     return LoadedFilterPage(
       listOfAvailableTags: listOfAvailableTags ?? this.listOfAvailableTags,
       listOfSelectedTags: listOfSelectedTags ?? this.listOfSelectedTags,
-      listOfSellers: listOfSellers ?? this.listOfSellers,
+      listOfAvailableSellers:
+          listOfAvailableSellers ?? this.listOfAvailableSellers,
       selectedSeller: selectedSeller ?? this.selectedSeller,
       filteredProducts: filteredProducts ?? this.filteredProducts,
       areProductsFiltered: areProductsFiltered ?? this.areProductsFiltered,

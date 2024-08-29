@@ -24,7 +24,6 @@ class ApplyFiltersEvent extends FilterEvent {
   ApplyFiltersEvent();
 }
 
-// Bloc Implementation
 class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
   final ProductsRepository _productsRepository;
 
@@ -77,7 +76,7 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
 
       return LoadedFilterPage().copyWith(
         listOfAvailableTags: uniqueTags,
-        listOfSellers: sellers,
+        listOfAvailableSellers: sellers,
       );
     } catch (e) {
       return ErrorFilterPage(error: e);
@@ -87,16 +86,17 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
   Future<void> _onUpdateSelectedTag(
       UpdateSelectedTagEvent event, Emitter<FilterPageState> emit) async {
     try {
-      final currentState = state as LoadedFilterPage;
-      final List<Tag> updatedTags = currentState.listOfSelectedTags ?? [];
+      if (state is LoadedFilterPage) {
+        final currentState = state as LoadedFilterPage;
+        final List<Tag> updatedTags = currentState.listOfSelectedTags ?? [];
 
-      if (updatedTags.contains(event.tag) == true) {
-        updatedTags.removeWhere((element) => element.tag == event.tag.tag);
-      } else {
-        updatedTags.add(event.tag);
+        if (updatedTags.contains(event.tag) == true) {
+          updatedTags.removeWhere((element) => element.tag == event.tag.tag);
+        } else {
+          updatedTags.add(event.tag);
+        }
+        emit(currentState.copyWith(listOfSelectedTags: updatedTags));
       }
-
-      emit(currentState.copyWith(listOfSelectedTags: updatedTags));
     } catch (e) {
       emit(ErrorFilterPage(error: e));
     }
@@ -105,9 +105,11 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
   Future<void> _onUpdateSelectedSellers(
       UpdateSelectedSellersEvent event, Emitter<FilterPageState> emit) async {
     try {
-      final currentState = state as LoadedFilterPage;
+      if (state is LoadedFilterPage) {
+        final currentState = state as LoadedFilterPage;
 
-      emit(currentState.copyWith(selectedSeller: event.sellerId));
+        emit(currentState.copyWith(selectedSeller: event.sellerId));
+      }
     } catch (e) {
       emit(ErrorFilterPage(error: e));
     }
@@ -116,29 +118,31 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
   Future<void> _onApplyFilters(
       ApplyFiltersEvent event, Emitter<FilterPageState> emit) async {
     try {
-      final currentState = state as LoadedFilterPage;
+      if (state is LoadedFilterPage) {
+        final currentState = state as LoadedFilterPage;
 
-      // Fetch all products
-      final products = await _getListOfAllProducts();
+        // Fetch all products
+        final products = await _getListOfAllProducts();
 
-      // Get selected filters
-      final selectedSellerId = currentState.selectedSeller;
-      final selectedTags = currentState.listOfSelectedTags ?? [];
+        // Get selected filters
+        final selectedSellerId = currentState.selectedSeller;
+        final selectedTags = currentState.listOfSelectedTags ?? [];
 
-      // Filter products by the selected seller and selected tags
-      final filteredProducts = products.where((product) {
-        final matchesSeller = selectedSellerId == null ||
-            product.offer.sellerName == selectedSellerId;
-        final matchesTags = selectedTags.isEmpty ||
-            selectedTags.every((tag) => product.tags.contains(tag));
-        return matchesSeller && matchesTags;
-      }).toList();
+        // Filter products by the selected seller and selected tags
+        final filteredProducts = products.where((product) {
+          final matchesSeller = selectedSellerId == null ||
+              product.offer.sellerName == selectedSellerId;
+          final matchesTags = selectedTags.isEmpty ||
+              selectedTags.every((tag) => product.tags.contains(tag));
+          return matchesSeller && matchesTags;
+        }).toList();
 
-      // Emit the state with the filtered products
-      emit(currentState.copyWith(
-        filteredProducts: filteredProducts,
-        areProductsFiltered: true,
-      ));
+        // Emit the state with the filtered products
+        emit(currentState.copyWith(
+          filteredProducts: filteredProducts,
+          areProductsFiltered: true,
+        ));
+      }
     } catch (e) {
       emit(ErrorFilterPage(error: e));
     }

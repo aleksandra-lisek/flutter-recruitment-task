@@ -48,12 +48,12 @@ class HomePage extends StatelessWidget {
       body: Padding(
         padding: _mainPadding,
         child: BlocListener<FilterBloc, FilterPageState>(
-          listener: (context, fs) {
-            final currentState = (fs as LoadedFilterPage);
-            if (currentState.areProductsFiltered == true) {
+          listener: (context, state) {
+            if (state is LoadedFilterPage &&
+                state.areProductsFiltered == true) {
               context
                   .read<HomeCubit>()
-                  .getFilteredPages(currentState.filteredProducts);
+                  .getFilteredPages(state.filteredProducts);
             }
           },
           child: BlocBuilder<HomeCubit, HomeState>(
