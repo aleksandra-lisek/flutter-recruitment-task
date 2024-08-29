@@ -131,6 +131,15 @@ class _ProductsSliverListState extends State<_ProductsSliverList> {
   }
 
   @override
+  void didUpdateWidget(covariant _ProductsSliverList oldWidget) {
+    _products = widget.state.pages
+        .map((page) => page.products)
+        .expand((product) => product)
+        .toList();
+    super.didUpdateWidget(oldWidget);
+  }
+
+  @override
   void dispose() {
     super.dispose();
   }
