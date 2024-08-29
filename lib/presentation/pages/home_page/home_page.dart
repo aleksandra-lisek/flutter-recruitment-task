@@ -30,7 +30,7 @@ class HomePage extends StatelessWidget {
                 children: [
                   Icon(Icons.filter_list),
                   SizedBox(width: 5),
-                  Text('Filters')
+                  Text('Filtry')
                 ],
               ),
               onPressed: () {
@@ -60,7 +60,7 @@ class HomePage extends StatelessWidget {
             builder: (context, state) {
               return switch (state) {
                 Error() => BigText('Error: ${state.error}'),
-                Loading() => const BigText('Loading...'),
+                Loading() => const Center(child: CircularProgressIndicator()),
                 NoProducts() => const BigText('No products'),
                 Loaded() =>
                   _LoadedWidget(state: state, scrollProductId: scrollProductId),
@@ -86,8 +86,7 @@ class _LoadedWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(children: <Widget>[
       Expanded(
-        child:
-            _ProductsSliverList(state: state, scrollProductId: scrollProductId),
+        child: _ProductsList(state: state, scrollProductId: scrollProductId),
       ),
       const Row(mainAxisSize: MainAxisSize.min, children: <Widget>[
         Column(
@@ -100,22 +99,23 @@ class _LoadedWidget extends StatelessWidget {
   }
 }
 
-class _ProductsSliverList extends StatefulWidget {
-  const _ProductsSliverList({required this.state, this.scrollProductId});
+class _ProductsList extends StatefulWidget {
+  const _ProductsList({required this.state, this.scrollProductId});
 
   final Loaded state;
   final String? scrollProductId;
 
   @override
-  State<_ProductsSliverList> createState() => _ProductsSliverListState();
+  State<_ProductsList> createState() => _ProductsListState();
 }
 
-class _ProductsSliverListState extends State<_ProductsSliverList> {
-  final _scrollController = ItemScrollController();
+class _ProductsListState extends State<_ProductsList> {
+  late ItemScrollController _scrollController;
   late List<Product> _products;
 
   @override
   void initState() {
+    _scrollController = ItemScrollController();
     _products = widget.state.pages
         .map((page) => page.products)
         .expand((product) => product)
@@ -131,7 +131,7 @@ class _ProductsSliverListState extends State<_ProductsSliverList> {
   }
 
   @override
-  void didUpdateWidget(covariant _ProductsSliverList oldWidget) {
+  void didUpdateWidget(covariant _ProductsList oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     _products = widget.state.pages

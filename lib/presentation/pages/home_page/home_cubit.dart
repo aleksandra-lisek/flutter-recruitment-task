@@ -54,6 +54,10 @@ class HomeCubit extends Cubit<HomeState> {
   final List<ProductsPage> _pages = [];
   var _param = GetProductsPage(pageNumber: 1);
 
+  void getLoadingPage() {
+    emit(const Loading());
+  }
+
   Future<void> getFilteredPages(List<Product>? filteredProducts) async {
     try {
       List<Map<String, dynamic>> listOfFilteredProducts =
