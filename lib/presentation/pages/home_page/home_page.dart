@@ -132,24 +132,31 @@ class _ProductsSliverListState extends State<_ProductsSliverList> {
 
   @override
   void didUpdateWidget(covariant _ProductsSliverList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
     _products = widget.state.pages
         .map((page) => page.products)
         .expand((product) => product)
         .toList();
-    super.didUpdateWidget(oldWidget);
   }
 
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  void _scrollToKey(String scrollProductId) {
-    final getProductId =
+  void _scrollToKey(String scrollProductId) async {
+    int productIndex =
         _products.indexWhere((element) => element.id == scrollProductId);
-    print(getProductId);
-    _scrollController.scrollTo(
-        index: getProductId, duration: const Duration(seconds: 1));
+
+    if (productIndex < 0) {
+      await context.read<HomeCubit>().getNextPage().then((_) {
+        productIndex =
+            _products.indexWhere((element) => element.id == scrollProductId);
+
+        _scrollToKey(scrollProductId);
+      });
+    } else {
+      await _scrollController.scrollTo(
+        index: productIndex,
+        duration: const Duration(seconds: 1),
+      );
+    }
   }
 
   @override
