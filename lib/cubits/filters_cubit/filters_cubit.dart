@@ -1,28 +1,24 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_events.dart';
 import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
-import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_state.dart';
+import 'package:flutter_recruitment_task/cubits/filters_cubit/filters_state.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
 
-class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
+class FilterCubit extends Cubit<FilterPageState> {
   final ProductsRepository _productsRepository;
 
-  FilterBloc(this._productsRepository)
+  FilterCubit(this._productsRepository)
       : super(
           const LoadingFilterPage(),
         ) {
-    on<FetchDataForFilters>(_fetchDataForFilters);
-    on<UpdateSelectedTagEvent>(_onUpdateSelectedTag);
-    on<UpdateSelectedSellersEvent>(_onUpdateSelectedSellers);
-    on<ApplyFiltersEvent>(_onApplyFilters);
+    fetchDataForFilters();
   }
 
   Future<List<Product>> _getListOfAllProducts() async {
-    final ProductsPage newPage = await _productsRepository
-        .getProductsPage(GetProductsPage(pageNumber: 1));
-
     try {
+      final ProductsPage newPage = await _productsRepository
+          .getProductsPage(GetProductsPage(pageNumber: 1));
+
       final List<Future<ProductsPage>> pageFutures = List.generate(
         newPage.totalPages,
         (index) => _productsRepository
@@ -38,8 +34,7 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
     }
   }
 
-  Future<void> _fetchDataForFilters(
-      FetchDataForFilters event, Emitter<FilterPageState> emit) async {
+  Future<void> fetchDataForFilters() async {
     try {
       emit(await _onLoadAvailableFilters());
     } catch (e) {
@@ -64,17 +59,16 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
     }
   }
 
-  Future<void> _onUpdateSelectedTag(
-      UpdateSelectedTagEvent event, Emitter<FilterPageState> emit) async {
+  Future<void> updateSelectedTag(Tag tag) async {
     try {
       if (state is LoadedFilterPage) {
         final currentState = state as LoadedFilterPage;
         final List<Tag> updatedTags = currentState.listOfSelectedTags ?? [];
 
-        if (updatedTags.contains(event.tag) == true) {
-          updatedTags.removeWhere((element) => element.tag == event.tag.tag);
+        if (updatedTags.contains(tag)) {
+          updatedTags.removeWhere((element) => element.tag == tag.tag);
         } else {
-          updatedTags.add(event.tag);
+          updatedTags.add(tag);
         }
         emit(currentState.copyWith(listOfSelectedTags: updatedTags));
       }
@@ -83,21 +77,18 @@ class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
     }
   }
 
-  Future<void> _onUpdateSelectedSellers(
-      UpdateSelectedSellersEvent event, Emitter<FilterPageState> emit) async {
+  Future<void> updateSelectedSellers(String? sellerId) async {
     try {
       if (state is LoadedFilterPage) {
         final currentState = state as LoadedFilterPage;
-
-        emit(currentState.copyWith(selectedSeller: event.sellerId));
+        emit(currentState.copyWith(selectedSeller: sellerId));
       }
     } catch (e) {
       emit(ErrorFilterPage(error: e));
     }
   }
 
-  Future<void> _onApplyFilters(
-      ApplyFiltersEvent event, Emitter<FilterPageState> emit) async {
+  Future<void> applyFilters() async {
     try {
       if (state is LoadedFilterPage) {
         final currentState = state as LoadedFilterPage;

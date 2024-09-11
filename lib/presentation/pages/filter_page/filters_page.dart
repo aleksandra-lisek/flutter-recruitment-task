@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_events.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
-import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_bloc.dart';
-import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_state.dart';
+import 'package:flutter_recruitment_task/cubits/filters_cubit/filters_cubit.dart';
+import 'package:flutter_recruitment_task/cubits/filters_cubit/filters_state.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 import 'package:flutter_recruitment_task/utils/hex_color.dart';
 
@@ -17,7 +16,8 @@ class FiltersPage extends StatelessWidget {
         title: const BigText('Filtry'),
         leading: const CloseButton(),
       ),
-      body: BlocBuilder<FilterBloc, FilterPageState>(builder: (context, state) {
+      body:
+          BlocBuilder<FilterCubit, FilterPageState>(builder: (context, state) {
         return switch (state) {
           LoadedFilterPage() => _Filters(state: state),
           LoadingFilterPage() => const BigText('Loading...'),
@@ -33,13 +33,13 @@ class FiltersPage extends StatelessWidget {
             ElevatedButton(
               child: const Text('Wyczyść filtry'),
               onPressed: () =>
-                  context.read<FilterBloc>().add(FetchDataForFilters()),
+                  context.read<FilterCubit>().fetchDataForFilters(),
             ),
             const SizedBox(width: 24),
             ElevatedButton(
                 child: const Text('Pokaz produkty'),
                 onPressed: () {
-                  context.read<FilterBloc>().add(ApplyFiltersEvent());
+                  context.read<FilterCubit>().applyFilters();
                   Navigator.maybePop(context);
                 }),
           ],
@@ -73,9 +73,9 @@ class _Filters extends StatelessWidget {
                   children: [
                     ...state.listOfAvailableTags!.map((tag) => _TagWidget(
                           tag,
-                          onSelected: (_) =>
-                              BlocProvider.of<FilterBloc>(context)
-                                  .add(UpdateSelectedTagEvent(tag)),
+                          onSelected: (_) => context
+                              .read<FilterCubit>()
+                              .updateSelectedTag(tag),
                           selected:
                               state.listOfSelectedTags?.contains(tag) ?? false,
                         )),
@@ -107,9 +107,9 @@ class _Filters extends StatelessWidget {
                             ),
                           )
                         ],
-                        onChanged: (value) =>
-                            BlocProvider.of<FilterBloc>(context)
-                                .add(UpdateSelectedSellersEvent(value)),
+                        onChanged: (seller) => context
+                            .read<FilterCubit>()
+                            .updateSelectedSellers(seller),
                       ),
                     )
                   : const SizedBox.shrink(),
