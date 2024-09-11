@@ -1,28 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_events.dart';
 import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
-import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_state.dart';
+import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_state.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
-
-abstract class FilterEvent {}
-
-class FetchDataForFilters extends FilterEvent {}
-
-class UpdateSelectedTagEvent extends FilterEvent {
-  final Tag tag;
-  UpdateSelectedTagEvent(this.tag);
-}
-
-class UpdateSelectedSellersEvent extends FilterEvent {
-  final String? sellerId;
-  UpdateSelectedSellersEvent(this.sellerId);
-}
-
-class ClearFiltersEvent extends FilterEvent {}
-
-class ApplyFiltersEvent extends FilterEvent {
-  ApplyFiltersEvent();
-}
 
 class FilterBloc extends Bloc<FilterEvent, FilterPageState> {
   final ProductsRepository _productsRepository;

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_events.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
-import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_bloc.dart';
-import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_state.dart';
+import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_bloc.dart';
+import 'package:flutter_recruitment_task/blocs/filter_bloc/filters_state.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 import 'package:flutter_recruitment_task/utils/hex_color.dart';
 

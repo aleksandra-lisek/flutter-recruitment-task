@@ -1,7 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
-import 'package:flutter_recruitment_task/presentation/pages/home_page/home_cubit.dart';
+import 'package:flutter_recruitment_task/cubits/home_cubit/home_cubit.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
@@ -82,6 +82,7 @@ void main() {
         await cubit.getFilteredPages(sampleProducts);
       },
       expect: () => [
+        const Loading(),
         Loaded(pages: sampleProductPages),
       ],
     );

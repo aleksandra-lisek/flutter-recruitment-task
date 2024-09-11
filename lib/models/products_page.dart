@@ -1,10 +1,9 @@
-import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'products_page.g.dart';
 
 @JsonSerializable()
-class ProductsPage extends Equatable {
+class ProductsPage {
   const ProductsPage({
     required this.totalPages,
     required this.pageNumber,
@@ -19,13 +18,10 @@ class ProductsPage extends Equatable {
   final int pageSize;
   final int totalPages;
   final List<Product> products;
-
-  @override
-  List<Object?> get props => [totalPages, pageNumber, pageSize, products];
 }
 
 @JsonSerializable()
-class Product extends Equatable {
+class Product {
   const Product({
     required this.id,
     required this.name,
@@ -42,20 +38,6 @@ class Product extends Equatable {
   factory Product.fromJson(Map<String, dynamic> json) =>
       _$ProductFromJson(json);
 
-  @override
-  List<Object?> get props => [
-        id,
-        name,
-        mainImage,
-        description,
-        available,
-        isFavorite,
-        isBlurred,
-        sellerId,
-        tags,
-        offer
-      ];
-
   final String id;
   final String name;
   final String mainImage;
@@ -69,7 +51,7 @@ class Product extends Equatable {
 }
 
 @JsonSerializable()
-class Offer extends Equatable {
+class Offer {
   const Offer({
     required this.skuId,
     required this.sellerId,
@@ -101,23 +83,6 @@ class Offer extends Equatable {
   final Price? omnibusPrice;
   final String? omnibusLabel;
   final List<Tag>? tags;
-
-  @override
-  List<Object?> get props => [
-        skuId,
-        sellerId,
-        sellerName,
-        subtitle,
-        isSponsored,
-        isBest,
-        regularPrice,
-        promotionalPrice,
-        normalizedPrice,
-        promotionalNormalizedPrice,
-        omnibusPrice,
-        omnibusLabel,
-        tags
-      ];
 }
 
 @JsonSerializable()
@@ -135,8 +100,6 @@ class Tag {
   final String label;
   final String color;
   final String labelColor;
-  // @override
-  // List<Object> get props => [tag, label, color, labelColor];
 
   @override
   bool operator ==(other) {
@@ -156,7 +119,7 @@ class Tag {
 }
 
 @JsonSerializable()
-class Price extends Equatable {
+class Price {
   const Price({
     required this.amount,
     required this.currency,
@@ -166,16 +129,10 @@ class Price extends Equatable {
 
   final double amount;
   final String currency;
-
-  @override
-  List<Object?> get props => [
-        amount,
-        currency,
-      ];
 }
 
 @JsonSerializable()
-class NormalizedPrice extends Equatable {
+class NormalizedPrice {
   const NormalizedPrice({
     required this.amount,
     required this.currency,
@@ -188,10 +145,4 @@ class NormalizedPrice extends Equatable {
   final double amount;
   final String currency;
   final String? unitLabel;
-
-  @override
-  List<Object?> get props => [
-        amount,
-        currency,
-      ];
 }

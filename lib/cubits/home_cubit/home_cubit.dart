@@ -9,6 +9,14 @@ sealed class HomeState extends Equatable {
   const HomeState();
   @override
   List<Object?> get props => [];
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is List<ProductsPage> && runtimeType == other.runtimeType;
+
+  @override
+  int get hashCode => 0;
 }
 
 class Loading extends HomeState {
@@ -59,6 +67,7 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> getFilteredPages(List<Product>? filteredProducts) async {
+    emit(const Loading());
     try {
       List<Map<String, dynamic>> listOfFilteredProducts =
           filteredProducts == null || filteredProducts.isEmpty
