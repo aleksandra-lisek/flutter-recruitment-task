@@ -37,7 +37,6 @@ class HomePage extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) {
-                      context.read<HomeCubit>().getLoadingPage();
                       return const FiltersPage();
                     },
                   ),
@@ -77,7 +76,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _LoadedWidget extends StatefulWidget {
+class _LoadedWidget extends StatelessWidget {
   const _LoadedWidget({
     required this.state,
     this.scrollProductId,
@@ -86,12 +85,7 @@ class _LoadedWidget extends StatefulWidget {
   final Loaded state;
   final String? scrollProductId;
 
-  @override
-  State<_LoadedWidget> createState() => _LoadedWidgetState();
-}
-
-class _LoadedWidgetState extends State<_LoadedWidget> {
-  List<Product> get _products => widget.state.pages
+  List<Product> get _products => state.pages
       .map((page) => page.products)
       .expand((product) => product)
       .toList();
@@ -103,7 +97,7 @@ class _LoadedWidgetState extends State<_LoadedWidget> {
         child: CustomScrollView(
           slivers: [
             _ProductsList(products: _products),
-            const _GetNextPageButton(),
+            if (state.morePagesAvailable) const _GetNextPageButton(),
           ],
         ),
       ),

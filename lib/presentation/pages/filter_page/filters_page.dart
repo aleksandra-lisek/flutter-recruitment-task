@@ -6,9 +6,15 @@ import 'package:flutter_recruitment_task/cubits/filters_cubit/filters_state.dart
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
 import 'package:flutter_recruitment_task/utils/hex_color.dart';
 
-class FiltersPage extends StatelessWidget {
+class FiltersPage extends StatefulWidget {
   const FiltersPage({super.key});
 
+  @override
+  State<FiltersPage> createState() => _FiltersPageState();
+}
+
+class _FiltersPageState extends State<FiltersPage> {
+  late String avaialbleProducts = '';
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,8 +22,13 @@ class FiltersPage extends StatelessWidget {
         title: const BigText('Filtry'),
         leading: const CloseButton(),
       ),
-      body:
-          BlocBuilder<FilterCubit, FilterPageState>(builder: (context, state) {
+      body: BlocConsumer<FilterCubit, FilterPageState>(
+          listener: (context, state) {
+        setState(() {
+          avaialbleProducts =
+              '${(state as LoadedFilterPage).avaialbleProducts}';
+        });
+      }, builder: (context, state) {
         return switch (state) {
           LoadedFilterPage() => _Filters(state: state),
           LoadingFilterPage() => const BigText('Loading...'),
@@ -37,7 +48,7 @@ class FiltersPage extends StatelessWidget {
             ),
             const SizedBox(width: 24),
             ElevatedButton(
-                child: const Text('Pokaz produkty'),
+                child: Text('Pokaz produkty $avaialbleProducts'),
                 onPressed: () {
                   context.read<FilterCubit>().applyFilters();
                   Navigator.maybePop(context);

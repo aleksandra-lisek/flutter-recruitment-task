@@ -1,4 +1,3 @@
-// Define Events
 import 'package:flutter_recruitment_task/models/products_page.dart';
 
 sealed class FilterPageState {
@@ -15,6 +14,7 @@ class LoadedFilterPage extends FilterPageState {
   final List<String>? listOfAvailableSellers;
   final String? selectedSeller;
   final List<Product>? filteredProducts;
+  final int? avaialbleProducts;
   final bool? areProductsFiltered;
 
   LoadedFilterPage({
@@ -23,6 +23,7 @@ class LoadedFilterPage extends FilterPageState {
     this.listOfAvailableSellers,
     this.selectedSeller,
     this.filteredProducts,
+    this.avaialbleProducts,
     this.areProductsFiltered,
   });
 
@@ -32,6 +33,7 @@ class LoadedFilterPage extends FilterPageState {
     List<String>? listOfAvailableSellers,
     String? selectedSeller,
     List<Product>? filteredProducts,
+    int? avaialbleProducts,
     bool? areProductsFiltered,
   }) {
     return LoadedFilterPage(
@@ -41,6 +43,7 @@ class LoadedFilterPage extends FilterPageState {
           listOfAvailableSellers ?? this.listOfAvailableSellers,
       selectedSeller: selectedSeller ?? this.selectedSeller,
       filteredProducts: filteredProducts ?? this.filteredProducts,
+      avaialbleProducts: avaialbleProducts ?? this.avaialbleProducts,
       areProductsFiltered: areProductsFiltered ?? this.areProductsFiltered,
     );
   }

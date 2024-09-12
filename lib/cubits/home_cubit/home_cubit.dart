@@ -1,22 +1,10 @@
 import 'package:bloc/bloc.dart';
 import 'package:flutter_recruitment_task/models/get_products_page.dart';
 import 'package:flutter_recruitment_task/models/products_page.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter_recruitment_task/repositories/products_repository.dart';
-import 'package:equatable/equatable.dart';
 
-sealed class HomeState extends Equatable {
+sealed class HomeState {
   const HomeState();
-  @override
-  List<Object?> get props => [];
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is List<ProductsPage> && runtimeType == other.runtimeType;
-
-  @override
-  int get hashCode => 0;
 }
 
 class Loading extends HomeState {
@@ -24,22 +12,10 @@ class Loading extends HomeState {
 }
 
 class Loaded extends HomeState {
-  const Loaded({required this.pages});
+  const Loaded({required this.pages, this.morePagesAvailable = false});
 
   final List<ProductsPage> pages;
-
-  @override
-  List<Object?> get props => [pages];
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is List<ProductsPage> &&
-          runtimeType == other.runtimeType &&
-          pages == other;
-
-  @override
-  int get hashCode => pages.hashCode;
+  final bool morePagesAvailable;
 }
 
 class NoProducts extends HomeState {
@@ -50,9 +26,6 @@ class Error extends HomeState {
   const Error({required this.error});
 
   final dynamic error;
-
-  @override
-  List<Object?> get props => [error];
 }
 
 class HomeCubit extends Cubit<HomeState> {
@@ -61,6 +34,19 @@ class HomeCubit extends Cubit<HomeState> {
   final ProductsRepository _productsRepository;
   final List<ProductsPage> _pages = [];
   var _param = GetProductsPage(pageNumber: 1);
+
+  Future<void> getNextPage() async {
+    try {
+      final totalPages = _pages.lastOrNull?.totalPages;
+      if (totalPages != null && _param.pageNumber > totalPages) return;
+      final newPage = await _productsRepository.getProductsPage(_param);
+      _param = _param.increasePageNumber();
+      _pages.add(newPage);
+      emit(Loaded(pages: _pages, morePagesAvailable: _isMorePagesAvailable()));
+    } catch (e) {
+      emit(Error(error: e));
+    }
+  }
 
   void getLoadingPage() {
     emit(const Loading());
@@ -95,22 +81,16 @@ class HomeCubit extends Cubit<HomeState> {
       _pages.replaceRange(0, _pages.length, listOfFilteredProductPages);
       listOfFilteredProducts.isEmpty
           ? emit(const NoProducts())
-          : emit(Loaded(pages: listOfFilteredProductPages));
+          : emit(Loaded(
+              pages: listOfFilteredProductPages,
+              morePagesAvailable: _isMorePagesAvailable()));
     } catch (e) {
       emit(Error(error: e));
     }
   }
 
-  Future<void> getNextPage() async {
-    try {
-      final totalPages = _pages.lastOrNull?.totalPages;
-      if (totalPages != null && _param.pageNumber > totalPages) return;
-      final newPage = await _productsRepository.getProductsPage(_param);
-      _param = _param.increasePageNumber();
-      _pages.add(newPage);
-      emit(Loaded(pages: _pages));
-    } catch (e) {
-      emit(Error(error: e));
-    }
+  bool _isMorePagesAvailable() {
+    if (_pages.isEmpty) return false;
+    return _pages.last.totalPages >= _param.pageNumber;
   }
 }
