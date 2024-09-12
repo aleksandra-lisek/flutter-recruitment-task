@@ -83,7 +83,10 @@ void main() {
       },
       expect: () => [
         const Loading(),
-        Loaded(pages: sampleProductPages),
+        isA<Loaded>()
+            .having((state) => state.pages.length, "should be two pages", 2)
+            .having((state) => state.morePagesAvailable,
+                "show more button shown", true),
       ],
     );
   });
