@@ -8,6 +8,8 @@ import 'package:flutter_recruitment_task/presentation/pages/filter_page/filters_
 import 'package:flutter_recruitment_task/cubits/filters_cubit/filters_state.dart';
 import 'package:flutter_recruitment_task/cubits/home_cubit/home_cubit.dart';
 import 'package:flutter_recruitment_task/presentation/widgets/big_text.dart';
+import 'package:scroll_to_index/scroll_to_index.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 
 const _mainPadding = EdgeInsets.all(16.0);
 
@@ -76,7 +78,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class _LoadedWidget extends StatelessWidget {
+class _LoadedWidget extends HookWidget {
   const _LoadedWidget({
     required this.state,
     this.scrollProductId,
@@ -90,13 +92,42 @@ class _LoadedWidget extends StatelessWidget {
       .expand((product) => product)
       .toList();
 
+  void _scrollToKey(String? scrollProductId, BuildContext context,
+      AutoScrollController controller) async {
+    int productIndex =
+        _products.indexWhere((element) => element.id == scrollProductId);
+
+    if (productIndex < 0) {
+      await context.read<HomeCubit>().getNextPage().then((_) {
+        productIndex =
+            _products.indexWhere((element) => element.id == scrollProductId);
+
+        _scrollToKey(scrollProductId, context, controller);
+      });
+    } else {
+      controller.scrollToIndex(
+        productIndex,
+        duration: const Duration(seconds: 1),
+        preferPosition: AutoScrollPosition.begin,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final scrollController = useMemoized(() => AutoScrollController());
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        _scrollToKey(scrollProductId, context, scrollController);
+      });
+      return null;
+    }, const []);
     return Column(children: <Widget>[
       Expanded(
         child: CustomScrollView(
+          controller: scrollController,
           slivers: [
-            _ProductsList(products: _products),
+            _ProductsList(products: _products, controller: scrollController),
             if (state.morePagesAvailable) const _GetNextPageButton(),
           ],
         ),
@@ -106,15 +137,21 @@ class _LoadedWidget extends StatelessWidget {
 }
 
 class _ProductsList extends StatelessWidget {
-  const _ProductsList({required this.products});
+  const _ProductsList({required this.products, required this.controller});
 
   final List<Product> products;
+  final AutoScrollController controller;
+
   @override
   Widget build(BuildContext context) {
     return SliverList.separated(
       itemCount: products.length,
-      itemBuilder: (context, index) =>
-          _ProductCard(products[index], index.toString()),
+      itemBuilder: (context, index) => AutoScrollTag(
+        controller: controller,
+        key: ValueKey(index),
+        index: index,
+        child: _ProductCard(products[index], index.toString()),
+      ),
       separatorBuilder: (context, index) => const Divider(),
     );
   }
@@ -137,6 +174,7 @@ class _ProductCard extends StatelessWidget {
         children: [
           BigText(product.name),
           Text(product.id),
+          Text(productIndex),
           _Tags(product: product),
         ],
       ),
