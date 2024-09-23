@@ -96,15 +96,16 @@ class _Filters extends StatelessWidget {
           const SizedBox(height: 24),
           Row(
             children: [
-              const Text('Wybierz sprzedawcę:'),
-              const SizedBox(width: 24),
               listOfAvailableSellers.isNotEmpty
                   ? SizedBox(
-                      width: 140,
                       child: DropdownButton(
                         enableFeedback: true,
+                        hint: const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Text('Wyszukaj sprzedawcę'),
+                        ),
                         value: state.selectedSeller,
-                        icon: const Icon(Icons.arrow_downward),
+                        icon: const Icon(Icons.search),
                         elevation: 16,
                         underline: Container(
                           height: 2,

@@ -195,32 +195,23 @@ class _Tags extends StatelessWidget {
   }
 }
 
-class _TagWidget extends StatefulWidget {
+class _TagWidget extends HookWidget {
   const _TagWidget(this.tag);
 
   final Tag tag;
 
-  @override
-  State<_TagWidget> createState() => _TagWidgetState();
-}
-
-class _TagWidgetState extends State<_TagWidget> {
-  late MaterialColor _color;
   final List<MaterialColor> _possibleColors = Colors.primaries;
 
   @override
-  void initState() {
-    _color = _possibleColors[Random().nextInt(_possibleColors.length)];
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final color =
+        useRef(_possibleColors[Random().nextInt(_possibleColors.length)]);
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       child: Chip(
-        color: MaterialStateProperty.all(_color),
-        label: Text(widget.tag.label),
+        color: MaterialStateProperty.all(color.value),
+        label: Text(tag.label),
       ),
     );
   }

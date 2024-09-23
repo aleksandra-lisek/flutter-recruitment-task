@@ -7,6 +7,7 @@ import 'package:flutter_recruitment_task/repositories/products_repository.dart';
 class FilterCubit extends Cubit<FilterPageState> {
   final ProductsRepository _productsRepository;
   List<Product> _filteredProducts = [];
+  List<Product> _products = [];
 
   FilterCubit(
     this._productsRepository,
@@ -46,18 +47,16 @@ class FilterCubit extends Cubit<FilterPageState> {
 
   Future<FilterPageState> _onLoadAvailableFilters() async {
     try {
-      _filteredProducts = await _getListOfAllProducts();
+      _products = await _getListOfAllProducts();
       final uniqueTags =
-          _filteredProducts.expand((product) => product.tags).toSet().toList();
-      final sellers = _filteredProducts
-          .map((product) => product.offer.sellerName)
-          .toSet()
-          .toList();
+          _products.expand((product) => product.tags).toSet().toList();
+      final sellers =
+          _products.map((product) => product.offer.sellerName).toSet().toList();
 
       return LoadedFilterPage().copyWith(
         listOfAvailableTags: uniqueTags,
         listOfAvailableSellers: sellers,
-        avaialbleProducts: _filteredProducts.length,
+        avaialbleProducts: _products.length,
       );
     } catch (e) {
       return ErrorFilterPage(error: e);
@@ -78,7 +77,7 @@ class FilterCubit extends Cubit<FilterPageState> {
 
         emit(currentState.copyWith(
           listOfSelectedTags: updatedTags,
-          avaialbleProducts: _filteredProducts.length,
+          avaialbleProducts: _products.length,
         ));
         _updateAmountOfAvailableProducts();
       }
@@ -107,13 +106,14 @@ class FilterCubit extends Cubit<FilterPageState> {
       final selectedTags = currentState.listOfSelectedTags ?? [];
 
       // Filter products by the selected seller and selected tags
-      _filteredProducts = _filteredProducts.where((product) {
+      _filteredProducts = _products.where((product) {
         final matchesSeller = selectedSellerId == null ||
             product.offer.sellerName == selectedSellerId;
         final matchesTags = selectedTags.isEmpty ||
             selectedTags.every((tag) => product.tags.contains(tag));
         return matchesSeller && matchesTags;
       }).toList();
+
       emit(currentState.copyWith(
         avaialbleProducts: _filteredProducts.length,
       ));
